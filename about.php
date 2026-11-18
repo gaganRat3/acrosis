@@ -2,6 +2,7 @@
 $page_title = 'About Us | Acrosis Beverages';
 $pageTitle = 'About Us';
 include 'includes/header.php';
+$registeredAddress = getSetting('address', 'H Tower 401, Shukan 6, Sama Savli Road, Vemali, Vadodara - 390024');
 ?>
 
 <!-- 1. Page Hero -->
@@ -52,7 +53,7 @@ include 'includes/header.php';
                         <div class="stat-box-icon">🏢</div>
                         <div class="stat-box-label">Registered Office</div>
                         <div class="stat-box-val">Vadodara, Gujarat</div>
-                        <div class="stat-box-sub">H Tower 401, Shukan 6, Sama Savli Rd, Vemali — 390024</div>
+                        <div class="stat-box-sub"><?= htmlspecialchars($registeredAddress, ENT_QUOTES) ?></div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-box-icon">🏭</div>

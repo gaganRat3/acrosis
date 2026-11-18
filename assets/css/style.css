@@ -63,6 +63,25 @@ a { color: inherit; text-decoration: none; }
 ul { list-style: none; }
 button { cursor: pointer; border: none; background: none; font: inherit; }
 
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  top: .75rem;
+  left: .75rem;
+  z-index: 2000;
+  padding: .65rem 1rem;
+  color: var(--navy);
+  background: var(--gold);
+  border-radius: var(--radius);
+  transform: translateY(-200%);
+  transition: transform var(--ease);
+}
+.skip-link:focus { transform: translateY(0); }
+
 /* ── 3. Utility Classes ───────────────────────────────────────────────────── */
 .container {
   width: 100%;

@@ -2,6 +2,9 @@
 $page_title = 'Our Factory | Acrosis Beverages';
 $pageTitle = 'Our Factory';
 include 'includes/header.php';
+$contactEmail = getSetting('email', 'Hello@acrosisbeverages.com');
+$contactPhone = getSetting('phone', '+91-9409833866');
+$registeredAddress = getSetting('address', 'H Tower 401, Shukan 6, Sama Savli Road, Vemali, Vadodara - 390024');
 ?>
 
 <!-- 1. Page Hero -->
@@ -79,7 +82,7 @@ include 'includes/header.php';
                         <div class="loc-icon">🏢</div>
                         <div>
                             <strong>Registered Office</strong>
-                            <p>H Tower 401, Shukan 6, Sama Savli Road, Vemali, Vadodara - 390024, Gujarat, India</p>
+                            <p><?= htmlspecialchars($registeredAddress, ENT_QUOTES) ?></p>
                             <span class="loc-meta">CIN: U11049GJ2026PTC185842</span>
                         </div>
                     </div>
@@ -120,35 +123,34 @@ include 'includes/header.php';
         <!-- UNIT 02 -->
         <div class="location-layout-grid fade-in" style="margin-top:3rem;">
             <div class="location-card">
-                <div class="loc-badge" style="background:#1A6B72;color:#fff;">Unit 02 — Expansion Unit</div>
-                <h3 class="loc-card-title">Fruits Flavors Juices</h3>
-                <p style="font-size:0.85rem;color:#1A6B72;font-weight:600;margin-bottom:1rem;">Glass Bottles Packing</p>
+                <div class="loc-badge" style="background:#1A6B72;color:#fff;">Proposed Unit 02 — Coming Soon</div>
+                <h3 class="loc-card-title">Export Quality Juice Unit Coming Soon</h3>
+                <p style="font-size:0.85rem;color:#1A6B72;font-weight:600;margin-bottom:1rem;">Glass Bottling &amp; Packing — Under Process</p>
 
                 <div class="loc-address-group">
                     <div class="loc-item">
                         <div class="loc-icon">📍</div>
                         <div>
                             <strong>Acrosis Beverages Pvt Ltd</strong>
-                            <p>Shankar Industrial Park, Opp Gate No 1, Manjusar GIDC, Manjusar, Savli Road, Vadodara - 391775</p>
-                            <p style="font-size:0.82rem;color:#6B7280;">Near Manjusar Village, Savli Road</p>
-                            <span class="loc-meta">Natural Fruit Juices — Glass Bottle Production</span>
+                            <p>Shankar Industrial Park, Opp Gate No 1, Manjusar GIDC, Manjusar, Vadodara</p>
+                            <span class="loc-meta">21,000 SQFT Plot · 11,000 SQFT Manufacturing Unit · Export Quality Juice Unit Coming Soon</span>
                         </div>
                     </div>
                     <div class="loc-item">
                         <div class="loc-icon">🌐</div>
                         <div>
                             <strong>Contact</strong>
-                            <p>+91-9409833866 · Hello@acrosisbeverages.com</p>
-                            <p>www.acrosisbeverages.com · www.acrosisbeverages.in</p>
+                            <p>Helpline: <?= htmlspecialchars($contactPhone, ENT_QUOTES) ?> · <?= htmlspecialchars($contactEmail, ENT_QUOTES) ?></p>
+                            <p>acrosisbeverages.com</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="loc-highlights">
                     <div class="lh-pill">🏭 Manjusar GIDC Zone</div>
-                    <div class="lh-pill">🍊 Juice Glass Bottle Unit</div>
+                    <div class="lh-pill">🍊 Export Quality Juice Unit</div>
                     <div class="lh-pill">🚚 Savli Road Connectivity</div>
-                    <div class="lh-pill">📦 Expansion Phase</div>
+                    <div class="lh-pill">📦 Under Process · Coming Soon</div>
                 </div>
             </div>
 
@@ -156,7 +158,7 @@ include 'includes/header.php';
             <div class="map-container-card">
                 <div class="map-header">
                     <span>📍 Unit 02: Manjusar GIDC, Vadodara</span>
-                    <span class="map-status">Juice Glass Unit</span>
+                    <span class="map-status">Coming Soon</span>
                 </div>
                 <div class="map-iframe-wrap">
                     <iframe

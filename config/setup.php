@@ -116,9 +116,9 @@ $stmt->close();
 $defaults = [
     ['site_name',        'Acrosis Beverages Pvt Ltd'],
     ['tagline',          'Purity | Refreshment | Excellence'],
-    ['contact_email',    'info@acrosisbeverages.com'],
-    ['contact_phone',    '+91 98765 43210'],
-    ['contact_address',  'Ahmedabad, Gujarat, India'],
+    ['email',            'Hello@acrosisbeverages.com'],
+    ['phone',            '+91-9409833866'],
+    ['address',          'H Tower 401, Shukan 6, Sama Savli Road, Vemali, Vadodara - 390024'],
     ['cin',              'U11049GJ2026PTC185842'],
     ['din',              '06816609'],
     ['fssai_license',    'FSSAI Central License Holder'],

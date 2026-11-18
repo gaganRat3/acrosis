@@ -15,6 +15,43 @@ function sanitize(string $input): string {
 }
 
 /**
+ * Generate or retrieve the current session CSRF token.
+ */
+function csrfToken(): string {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+/**
+ * Validate a submitted CSRF token.
+ */
+function verifyCsrfToken(?string $token): bool {
+    return is_string($token)
+        && !empty($_SESSION['csrf_token'])
+        && hash_equals($_SESSION['csrf_token'], $token);
+}
+
+/**
+ * Return a hidden CSRF form field.
+ */
+function csrfField(): string {
+    return '<input type="hidden" name="csrf_token" value="' .
+        htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8') . '">';
+}
+
+/**
+ * Require a valid CSRF token for a state-changing request.
+ */
+function requireCsrfToken(): void {
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? null)) {
+        http_response_code(403);
+        exit('Invalid security token. Please go back and try again.');
+    }
+}
+
+/**
  * Build a URL relative to the application root.
  *
  * Local XAMPP uses /acrosis while a Hostinger main domain uses /.
@@ -25,6 +62,39 @@ function appUrl(string $path = ''): string {
         ? '/acrosis'
         : '';
     return $basePath . ($path !== '' ? '/' . ltrim($path, '/') : '');
+}
+
+/**
+ * Build an absolute public URL for SEO metadata.
+ */
+function siteUrl(string $path = ''): string {
+    $baseUrl = getenv('ACROSIS_SITE_URL') ?: 'https://acrosisbeverages.com';
+    return rtrim($baseUrl, '/') . ($path !== '' ? '/' . ltrim($path, '/') : '');
+}
+
+/**
+ * Read a site setting once per request.
+ */
+function getSetting(string $key, string $fallback = ''): string {
+    static $settings;
+
+    if ($settings === null) {
+        $settings = [];
+        global $conn;
+
+        if (isset($conn) && $conn instanceof mysqli) {
+            $result = $conn->query("SELECT `key`, `value` FROM site_settings");
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    $settings[$row['key']] = (string)($row['value'] ?? '');
+                }
+            } else {
+                error_log('Unable to load site settings: ' . $conn->error);
+            }
+        }
+    }
+
+    return $settings[$key] ?? $fallback;
 }
 
 /**
@@ -49,6 +119,47 @@ function requireLogin(): void {
     if (!isLoggedIn()) {
         redirect(appUrl('admin/login.php'));
     }
+}
+
+/**
+ * Check whether the logged-in administrator has one of the supplied roles.
+ */
+function hasRole(string|array $roles): bool {
+    $roles = (array)$roles;
+    return isLoggedIn() && in_array($_SESSION['admin_role'] ?? '', $roles, true);
+}
+
+/**
+ * Require one of the supplied administrator roles.
+ */
+function requireRole(string|array $roles): void {
+    requireLogin();
+    if (!hasRole($roles)) {
+        http_response_code(403);
+        exit('You do not have permission to access this page.');
+    }
+}
+
+/**
+ * Apply a basic session-based login throttle.
+ */
+function loginRateLimitExceeded(): bool {
+    $now = time();
+    $window = 15 * 60;
+    $attempts = $_SESSION['login_attempts'] ?? [];
+    $attempts = array_values(array_filter($attempts, static function ($timestamp) use ($now, $window) {
+        return is_int($timestamp) && ($now - $timestamp) < $window;
+    }));
+    $_SESSION['login_attempts'] = $attempts;
+    return count($attempts) >= 5;
+}
+
+function recordFailedLogin(): void {
+    $_SESSION['login_attempts'][] = time();
+}
+
+function clearLoginAttempts(): void {
+    unset($_SESSION['login_attempts']);
 }
 
 /**

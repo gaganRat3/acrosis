@@ -22,10 +22,10 @@ include 'includes/header.php';
 <section class="filter-bar-section">
     <div class="container">
         <div class="filter-tabs">
-            <button class="filter-btn active" data-filter="all">All Products</button>
-            <button class="filter-btn" data-filter="pet">🫧 Sparkling Water (PET)</button>
-            <button class="filter-btn" data-filter="glass">🥤 Premium Juices (Glass)</button>
-            <button class="filter-btn" data-filter="can">🥫 Soda Cans (Aluminum)</button>
+            <button class="filter-btn active" data-filter="all" aria-pressed="true">All Products</button>
+            <button class="filter-btn" data-filter="pet" aria-pressed="false">🫧 Sparkling Water (PET)</button>
+            <button class="filter-btn" data-filter="glass" aria-pressed="false">🥤 Premium Juices (Glass)</button>
+            <button class="filter-btn" data-filter="can" aria-pressed="false">🥫 Soda Cans (Aluminum)</button>
         </div>
     </div>
 </section>
@@ -712,6 +712,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Toggle active button
             filterBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
+            filterBtns.forEach(b => b.setAttribute('aria-pressed', b === this ? 'true' : 'false'));
 
             // Filter main segment sections
             segmentSections.forEach(section => {

@@ -5,6 +5,7 @@ require_once dirname(__DIR__, 2) . '/includes/functions.php';
 
 // Handle Delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    requireCsrfToken();
     $del_id = (int)$_POST['delete_id'];
     $del_stmt = $conn->prepare("DELETE FROM enquiries WHERE id = ?");
     $del_stmt->bind_param("i", $del_id);
@@ -121,6 +122,7 @@ $cnt_car = $conn->query("SELECT COUNT(*) FROM enquiries WHERE type='career'")->f
                                         View
                                     </button>
                                     <form method="POST" action="index.php<?= !empty($filter_type) ? '?type=' . urlencode($filter_type) : '' ?>" style="display:inline;" onsubmit="return confirm('Delete enquiry #<?= $e['id'] ?>?');">
+                                        <?= csrfField() ?>
                                         <input type="hidden" name="delete_id" value="<?= $e['id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                     </form>

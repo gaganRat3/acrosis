@@ -4,6 +4,7 @@ require_once dirname(__DIR__, 2) . '/config/db.php';
 require_once dirname(__DIR__, 2) . '/includes/functions.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    requireCsrfToken();
     $delete_id = (int)$_POST['delete_id'];
     $stmt = $conn->prepare("SELECT image_path FROM gallery_images WHERE id = ?");
     $stmt->bind_param("i", $delete_id);
@@ -68,6 +69,7 @@ $images = $conn->query("SELECT id, title, image_path, sort_order, created_at FRO
                             <td><?= date('d M Y', strtotime($image['created_at'])) ?></td>
                             <td style="text-align:center;">
                                 <form method="POST" action="index.php" onsubmit="return confirm('Delete this gallery image permanently?');">
+                                    <?= csrfField() ?>
                                     <input type="hidden" name="delete_id" value="<?= (int)$image['id'] ?>">
                                     <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                 </form>

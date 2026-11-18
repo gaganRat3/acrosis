@@ -4,6 +4,7 @@ include '../includes/admin_header.php';
 
 // Handle Delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    requireCsrfToken();
     $del_id = (int)$_POST['delete_id'];
     $stmt = $conn->prepare("SELECT image_path FROM products WHERE id = ?");
     $stmt->bind_param("i", $del_id);
@@ -115,6 +116,7 @@ $products = $conn->query($sql);
                                 <div style="display:inline-flex; gap:6px;">
                                     <a href="edit.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-secondary">Edit</a>
                                     <form method="POST" action="index.php" style="display:inline;" onsubmit="return confirm('Are you sure you want to permanently delete this product?');">
+                                        <?= csrfField() ?>
                                         <input type="hidden" name="delete_id" value="<?= $p['id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                     </form>

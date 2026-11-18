@@ -10,16 +10,14 @@ include __DIR__ . '/includes/header.php';
 <section class="hero hero-image" id="hero" aria-label="Acrosis Beverages">
   <div class="hero-image-frame">
     <img
-      src="<?= appUrl('assets/images/landing page.png') ?>"
+      src="<?= appUrl('assets/images/landing main.png') ?>"
       alt="Acrosis Beverages — Taste The Premium"
       class="hero-image-asset"
     >
   </div>
 
   <div class="hero-image-actions">
-    <a href="<?= appUrl('products.php') ?>" class="btn btn-primary">Explore Flavors</a>
-    <a href="<?= appUrl('factory.php') ?>" class="btn btn-outline-white">Our Factory</a>
-    <a href="<?= appUrl('contact.php') ?>" class="btn btn-outline-white">Contact Us</a>
+    <a href="<?= appUrl('contact.php') ?>" class="btn btn-primary">Contact Us</a>
   </div>
 </section>
 
@@ -271,8 +269,8 @@ include __DIR__ . '/includes/header.php';
       <div class="trust-item fade-in delay-3">
         <div class="trust-item-icon" aria-hidden="true">🏦</div>
         <div class="trust-item-content">
-          <strong>M S Co-Op Bank Partner</strong>
-          <p>Banking operations backed by a trusted regional co-operative financial institution, ensuring stable and transparent financial dealings.</p>
+          <strong>Bankers Support</strong>
+          <p>Supported by trusted banking partners to ensure stable and transparent financial operations.</p>
         </div>
       </div>
 

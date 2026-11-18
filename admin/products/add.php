@@ -5,6 +5,7 @@ require_once dirname(__DIR__, 2) . '/includes/functions.php';
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrfToken();
     $name = sanitize($_POST['name'] ?? '');
     $segment = (int)($_POST['segment'] ?? 1);
     $description = sanitize($_POST['description'] ?? '');
@@ -62,6 +63,7 @@ include '../includes/admin_header.php';
     <?php endif; ?>
 
     <form method="POST" enctype="multipart/form-data">
+        <?= csrfField() ?>
         <div class="form-grid-2">
             <div class="form-group">
                 <label>Product Name <span style="color:#dc2626;">*</span></label>

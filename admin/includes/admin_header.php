@@ -156,16 +156,26 @@ $admin_role_text = htmlspecialchars($_SESSION['admin_role'] ?? 'admin');
         <a href="<?= $admin_base ?>gallery/index.php" <?= (strpos($_SERVER['PHP_SELF'],'gallery')!==false)?'class="active"':'' ?>>
             <span>🖼️</span> Gallery
         </a>
-        <a href="<?= $admin_base ?>users/index.php" <?= (strpos($_SERVER['PHP_SELF'],'users')!==false)?'class="active"':'' ?>>
-            <span>👤</span> Admin Users
-        </a>
+        <?php if (hasRole('super_admin')): ?>
+            <a href="<?= $admin_base ?>users/index.php" <?= (strpos($_SERVER['PHP_SELF'],'users')!==false)?'class="active"':'' ?>>
+                <span>👤</span> Admin Users
+            </a>
+            <a href="<?= $admin_base ?>settings/index.php" <?= (strpos($_SERVER['PHP_SELF'],'settings')!==false)?'class="active"':'' ?>>
+                <span>⚙️</span> Website Settings
+            </a>
+        <?php endif; ?>
         <a href="<?= $admin_base ?>enquiries/index.php" <?= (strpos($_SERVER['PHP_SELF'],'enquiries')!==false)?'class="active"':'' ?>>
             <span>📧</span> Enquiries
         </a>
     </nav>
     <div class="sidebar-footer">
         <a href="<?= $public_base ?>index.php" target="_blank"><span>🌐</span> View Website</a>
-        <a href="<?= $admin_base ?>logout.php"><span>🚪</span> Logout</a>
+        <form method="POST" action="<?= $admin_base ?>logout.php" style="margin:0;">
+            <?= csrfField() ?>
+            <button type="submit" style="background:none;border:0;padding:0;color:#aaa;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer;font-family:inherit;">
+                <span>🚪</span> Logout
+            </button>
+        </form>
     </div>
 </div>
 

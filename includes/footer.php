@@ -1,4 +1,15 @@
+<!-- end main content -->
+</main>
+
 <!-- ═══════════════════════════════ FOOTER ═══════════════════════════════════ -->
+<?php
+$siteName = getSetting('site_name', 'Acrosis Beverages Pvt Ltd');
+$siteTagline = getSetting('tagline', 'Purity · Refreshment · Excellence');
+$contactEmail = getSetting('email', 'Hello@acrosisbeverages.com');
+$contactPhone = getSetting('phone', '+91-9409833866');
+$contactPhoneHref = preg_replace('/[^0-9+]/', '', $contactPhone);
+$contactAddress = getSetting('address', 'Vadodara, Gujarat, India');
+?>
 <footer class="site-footer" role="contentinfo">
   <div class="footer-grid container">
 
@@ -11,9 +22,9 @@
           <span class="logo-sub">BEVERAGES</span>
         </span>
       </a>
-      <p class="footer-tagline">Purity · Refreshment · Excellence</p>
+      <p class="footer-tagline"><?= htmlspecialchars($siteTagline, ENT_QUOTES) ?></p>
       <p class="footer-cin">
-        Acrosis Beverages Pvt Ltd<br>
+        <?= htmlspecialchars($siteName, ENT_QUOTES) ?><br>
         CIN: U11049GJ2026PTC185842<br>
         DIN: 06816609<br>
         Incorporated in Gujarat, India — 2026
@@ -67,15 +78,15 @@
       <address class="footer-contact">
         <p>
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          Vadodara, Gujarat, India
+          <?= htmlspecialchars($contactAddress, ENT_QUOTES) ?>
         </p>
         <p>
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-          <a href="mailto:Hello@acrosisbeverages.com">Hello@acrosisbeverages.com</a>
+          <a href="mailto:<?= htmlspecialchars($contactEmail, ENT_QUOTES) ?>"><?= htmlspecialchars($contactEmail, ENT_QUOTES) ?></a>
         </p>
         <p>
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-          <a href="tel:+919409833866">+91 9409833866</a>
+          <a href="tel:<?= htmlspecialchars($contactPhoneHref, ENT_QUOTES) ?>">Helpline: <?= htmlspecialchars($contactPhone, ENT_QUOTES) ?></a>
         </p>
       </address>
     </div>
@@ -85,7 +96,7 @@
   <!-- Bottom bar -->
   <div class="footer-bottom">
     <div class="container footer-bottom-inner">
-      <p>&copy; <?= date('Y') ?> Acrosis Beverages Pvt Ltd. All rights reserved.</p>
+      <p>&copy; <?= date('Y') ?> <?= htmlspecialchars($siteName, ENT_QUOTES) ?>. All rights reserved.</p>
       <p class="footer-legal">CIN: U11049GJ2026PTC185842 &nbsp;|&nbsp; DIN: 06816609</p>
     </div>
   </div>

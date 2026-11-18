@@ -2,6 +2,7 @@
 $page_title = 'Edit Admin User';
 require_once dirname(__DIR__, 2) . '/config/db.php';
 require_once dirname(__DIR__, 2) . '/includes/functions.php';
+requireRole('super_admin');
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($id <= 0) {
@@ -22,9 +23,10 @@ if (!$user) {
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrfToken();
     $username = trim(sanitize($_POST['username'] ?? ''));
     $full_name = trim(sanitize($_POST['full_name'] ?? ''));
-    $role = sanitize($_POST['role'] ?? 'admin');
+    $role = sanitize($_POST['role'] ?? 'editor');
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
     $is_active = isset($_POST['is_active']) ? 1 : 0;
@@ -36,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Username and Full Name are required.';
     } elseif (strlen($username) < 3) {
         $error = 'Username must be at least 3 characters long.';
+    } elseif (!in_array($role, ['editor', 'super_admin'], true)) {
+        $error = 'Please select a valid role.';
     } else {
         // Check unique username for others
         $check = $conn->prepare("SELECT id FROM admin_users WHERE username = ? AND id != ?");
@@ -95,6 +99,7 @@ include '../includes/admin_header.php';
     <?php endif; ?>
 
     <form method="POST">
+        <?= csrfField() ?>
         <div class="form-group">
             <label>Username <span style="color:#dc2626;">*</span></label>
             <input type="text" name="username" value="<?= htmlspecialchars($_POST['username'] ?? $user['username']) ?>" required autocomplete="off">
@@ -109,7 +114,7 @@ include '../includes/admin_header.php';
             <label>Role <span style="color:#dc2626;">*</span></label>
             <?php $cur_role = $_POST['role'] ?? $user['role']; ?>
             <select name="role" required>
-                <option value="admin" <?= $cur_role === 'admin' ? 'selected' : '' ?>>Admin</option>
+                <option value="editor" <?= $cur_role === 'editor' ? 'selected' : '' ?>>Editor</option>
                 <option value="super_admin" <?= $cur_role === 'super_admin' ? 'selected' : '' ?>>Super Admin</option>
             </select>
         </div>

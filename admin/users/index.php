@@ -2,9 +2,11 @@
 $page_title = 'Admin Users';
 require_once dirname(__DIR__, 2) . '/config/db.php';
 require_once dirname(__DIR__, 2) . '/includes/functions.php';
+requireRole('super_admin');
 
 // Handle Toggle Active
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_id'])) {
+    requireCsrfToken();
     $toggle_id = (int)$_POST['toggle_id'];
     if ($toggle_id === (int)($_SESSION['admin_id'] ?? 0)) {
         flashMessage('error', 'You cannot deactivate your own logged-in account.');
@@ -83,6 +85,7 @@ $users = $conn->query("SELECT id, username, full_name, role, is_active, created_
                                     
                                     <?php if (!$is_self): ?>
                                         <form method="POST" action="index.php" style="display:inline;">
+                                            <?= csrfField() ?>
                                             <input type="hidden" name="toggle_id" value="<?= $u['id'] ?>">
                                             <button type="submit" class="btn btn-sm <?= $u['is_active'] ? 'btn-danger' : 'btn-outline' ?>">
                                                 <?= $u['is_active'] ? 'Deactivate' : 'Activate' ?>

@@ -49,6 +49,8 @@ This file is a quick reference for future development sessions. Read it before i
 │   ├── gallery/
 │   │   ├── index.php         List/delete gallery images
 │   │   └── add.php           Upload gallery image
+│   ├── settings/
+│   │   └── index.php         Update shared public website settings
 │   └── users/
 │       ├── index.php         List and activate/deactivate admin users
 │       ├── add.php           Create admin user
@@ -166,6 +168,14 @@ For CLI syntax checks, run from the project root:
 Get-ChildItem -Recurse -Filter *.php | ForEach-Object { php -l $_.FullName }
 ```
 
+For the cross-platform automated lint check, run:
+
+```powershell
+php tools/lint.php
+```
+
+GitHub Actions runs the same check on every push and pull request using `.github/workflows/php-lint.yml`.
+
 ## Change checklist
 
 - Read the directly affected page and its included header/footer/helper first.
@@ -182,7 +192,7 @@ Get-ChildItem -Recurse -Filter *.php | ForEach-Object { php -l $_.FullName }
 ## Known implementation notes
 
 - The public site contains substantial hard-coded marketing copy; database-managed products are an additional catalogue section, not a replacement for the static segment content.
-- `site_settings` is seeded but most public contact/company values are currently hard-coded in templates.
+- `site_settings` stores shared company details; super admins can update them from `admin/settings/index.php`, and public templates read them through `getSetting()`.
 - `sanitize()` HTML-escapes input before storage. Do not assume it replaces validation; add explicit validation for fields that require a specific format.
 - Admin role values include `super_admin`, `editor`, and code paths also offer `admin`; review role policy before implementing authorization changes.
 - There are no migrations or dependency manifests; schema changes currently belong in `config/setup.php` or a separately documented SQL migration.

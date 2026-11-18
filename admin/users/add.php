@@ -2,19 +2,23 @@
 $page_title = 'Add Admin User';
 require_once dirname(__DIR__, 2) . '/config/db.php';
 require_once dirname(__DIR__, 2) . '/includes/functions.php';
+requireRole('super_admin');
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrfToken();
     $username = trim(sanitize($_POST['username'] ?? ''));
     $full_name = trim(sanitize($_POST['full_name'] ?? ''));
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
-    $role = sanitize($_POST['role'] ?? 'admin');
+    $role = sanitize($_POST['role'] ?? 'editor');
 
     if (empty($username) || empty($full_name)) {
         $error = 'Username and Full Name are required.';
     } elseif (strlen($username) < 3) {
         $error = 'Username must be at least 3 characters long.';
+    } elseif (!in_array($role, ['editor', 'super_admin'], true)) {
+        $error = 'Please select a valid role.';
     } elseif (strlen($password) < 8) {
         $error = 'Password must be at least 8 characters long.';
     } elseif ($password !== $confirm_password) {
@@ -58,6 +62,7 @@ include '../includes/admin_header.php';
     <?php endif; ?>
 
     <form method="POST">
+        <?= csrfField() ?>
         <div class="form-group">
             <label>Username <span style="color:#dc2626;">*</span></label>
             <input type="text" name="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" placeholder="e.g. jhajohn" required autocomplete="off">
@@ -72,7 +77,7 @@ include '../includes/admin_header.php';
         <div class="form-group">
             <label>Role <span style="color:#dc2626;">*</span></label>
             <select name="role" required>
-                <option value="admin" <?= (($_POST['role'] ?? '') === 'admin') ? 'selected' : '' ?>>Admin</option>
+                <option value="editor" <?= (($_POST['role'] ?? 'editor') === 'editor') ? 'selected' : '' ?>>Editor</option>
                 <option value="super_admin" <?= (($_POST['role'] ?? '') === 'super_admin') ? 'selected' : '' ?>>Super Admin</option>
             </select>
             <div class="form-hint">Super Admin has complete system administration access</div>

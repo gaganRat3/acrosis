@@ -6,15 +6,46 @@ require_once 'includes/functions.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+$contactEmail = getSetting('email', 'Hello@acrosisbeverages.com');
+$contactPhone = getSetting('phone', '+91-9409833866');
+$contactPhoneHref = preg_replace('/[^0-9+]/', '', $contactPhone);
+$contactAddress = getSetting('address', 'H Tower 401, Shukan 6, Sama Savli Road, Vemali, Vadodara - 390024');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['enquiry_type']) || isset($_POST['form_type']))) {
+    requireCsrfToken();
+
     $type  = sanitize($_POST['enquiry_type'] ?? $_POST['form_type']);
     $name  = sanitize($_POST['name']  ?? '');
     $email = sanitize($_POST['email'] ?? '');
     $phone = sanitize($_POST['phone'] ?? '');
     $city  = sanitize($_POST['city']  ?? '');
     $raw_message = sanitize($_POST['message'] ?? '');
-    
+
+    $allowedTypes = ['general', 'distributor', 'career'];
+    $phoneIsValid = $phone === '' || preg_match('/^\+?[0-9][0-9\s().-]{6,19}$/', $phone);
+    $messageIsRequired = in_array($type, ['general', 'career'], true);
+    $validationError = null;
+    if (!in_array($type, $allowedTypes, true)) {
+        $validationError = 'Please select a valid enquiry type.';
+    } elseif ($name === '' || strlen($name) > 120) {
+        $validationError = 'Please enter a valid name.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 180) {
+        $validationError = 'Please enter a valid email address.';
+    } elseif (!$phoneIsValid) {
+        $validationError = 'Please enter a valid phone number.';
+    } elseif (strlen($city) > 100) {
+        $validationError = 'City must be 100 characters or fewer.';
+    } elseif (($messageIsRequired && $raw_message === '') || strlen($raw_message) > 5000) {
+        $validationError = $messageIsRequired
+            ? 'Please enter a message.'
+            : 'Message must be 5000 characters or fewer.';
+    }
+
+    if ($validationError !== null) {
+        flashMessage('error', $validationError);
+        redirect('contact.php');
+    }
+
     // Collect extra structured fields if submitted
     $extra = [];
     if (!empty($_POST['company_name'])) $extra[] = "Company: " . sanitize($_POST['company_name']);
@@ -57,16 +88,13 @@ include 'includes/header.php';
 <!-- ═══════════════════════════════ CONTACT CARDS (3+1 COLUMNS) ═══════════════════════════════ -->
 <section class="section-pad bg-white">
   <div class="container">
-    <div class="contact-grid" style="grid-template-columns:repeat(2,1fr);">
+    <div class="contact-grid">
       <!-- Card 1: Registered Office -->
       <div class="contact-card fade-in">
         <div class="contact-card-icon">🏛️</div>
         <h3>Registered Office</h3>
         <p class="contact-card-text">
-          H Tower 401, Shukan 6,<br>
-          Sama Savli Road, Vemali,<br>
-          Vadodara - 390024,<br>
-          Gujarat, India
+          <?= nl2br(htmlspecialchars($contactAddress, ENT_QUOTES)) ?>
         </p>
         <div class="contact-card-badge">Corporate HQ &amp; Administration</div>
       </div>
@@ -87,14 +115,14 @@ include 'includes/header.php';
       <!-- Card 3: Unit 02 Factory -->
       <div class="contact-card fade-in">
         <div class="contact-card-icon">🏗️</div>
-        <h3>Unit 02 — Expansion Unit</h3>
+        <h3>Proposed Unit 02 — Coming Soon</h3>
         <p class="contact-card-text">
           Shankar Industrial Park,<br>
           Opp Gate No 1, Manjusar GIDC,<br>
-          Savli Road, Vadodara - 391775<br>
-          <small style="color:#1A6B72;font-weight:600;">Fruits Flavors Juices — Glass Bottles Packing</small>
+          MANJUSAR, VADODARA<br>
+          <small style="color:#1A6B72;font-weight:600;">Export Quality Juice Unit Coming Soon — Glass Bottling &amp; Packing Under Process</small>
         </p>
-        <div class="contact-card-badge">Near Manjusar Village, Savli Road</div>
+        <div class="contact-card-badge">Under Process · Plot 21,000 Sq.ft · Mfg Unit 11,000 Sq.ft</div>
       </div>
 
       <!-- Card 4: Reach Us -->
@@ -103,17 +131,16 @@ include 'includes/header.php';
         <h3>Reach Us</h3>
         <div class="contact-reach-list">
           <p>
-            <strong>Mobile:</strong><br>
-            <a href="tel:+919409833866" class="contact-link">+91-9409833866</a>
+            <strong>Helpline:</strong><br>
+            <a href="tel:<?= htmlspecialchars($contactPhoneHref, ENT_QUOTES) ?>" class="contact-link"><?= htmlspecialchars($contactPhone, ENT_QUOTES) ?></a>
           </p>
           <p>
             <strong>Email:</strong><br>
-            <a href="mailto:Hello@acrosisbeverages.com" class="contact-link">Hello@acrosisbeverages.com</a>
+            <a href="mailto:<?= htmlspecialchars($contactEmail, ENT_QUOTES) ?>" class="contact-link"><?= htmlspecialchars($contactEmail, ENT_QUOTES) ?></a>
           </p>
           <p>
             <strong>Web:</strong><br>
-            <a href="https://www.acrosisbeverages.com" target="_blank" rel="noopener" class="contact-link">www.acrosisbeverages.com</a> /
-            <a href="https://www.acrosisbeverages.in" target="_blank" rel="noopener" class="contact-link">www.acrosisbeverages.in</a>
+            <a href="https://acrosisbeverages.com" target="_blank" rel="noopener" class="contact-link">acrosisbeverages.com</a>
           </p>
         </div>
       </div>
@@ -133,82 +160,84 @@ include 'includes/header.php';
     <div class="enquiry-tabs-wrapper">
       <!-- Tabs Navigation -->
       <div class="tab-buttons" role="tablist">
-        <button class="tab-btn active" onclick="openTab(event, 'tab-general')" role="tab" aria-selected="true">
+        <button id="tab-general-btn" class="tab-btn active" onclick="openTab(event, 'tab-general')" role="tab" aria-selected="true" aria-controls="tab-general">
           💬 General Inquiry
         </button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-distributor')" role="tab" aria-selected="false">
+        <button id="tab-distributor-btn" class="tab-btn" onclick="openTab(event, 'tab-distributor')" role="tab" aria-selected="false" aria-controls="tab-distributor">
           🤝 Distributor Inquiry
         </button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-career')" role="tab" aria-selected="false">
+        <button id="tab-career-btn" class="tab-btn" onclick="openTab(event, 'tab-career')" role="tab" aria-selected="false" aria-controls="tab-career">
           💼 Career
         </button>
       </div>
 
       <div class="tab-content-container">
         <!-- TAB 1: General Inquiry -->
-        <div id="tab-general" class="tab-pane active" role="tabpanel">
+        <div id="tab-general" class="tab-pane active" role="tabpanel" aria-labelledby="tab-general-btn">
           <form method="POST" action="contact.php" class="styled-form">
+            <?= csrfField() ?>
             <input type="hidden" name="enquiry_type" value="general">
             <div class="form-grid-2">
               <div class="form-group">
-                <label>Full Name <span class="req">*</span></label>
-                <input type="text" name="name" placeholder="e.g. Rahul Sharma" required>
+                <label for="general-name">Full Name <span class="req">*</span></label>
+                <input id="general-name" type="text" name="name" placeholder="e.g. Rahul Sharma" required>
               </div>
               <div class="form-group">
-                <label>Email Address <span class="req">*</span></label>
-                <input type="email" name="email" placeholder="e.g. rahul@example.com" required>
+                <label for="general-email">Email Address <span class="req">*</span></label>
+                <input id="general-email" type="email" name="email" placeholder="e.g. rahul@example.com" required>
               </div>
             </div>
             <div class="form-grid-2">
               <div class="form-group">
-                <label>Phone Number <span class="req">*</span></label>
-                <input type="tel" name="phone" placeholder="e.g. +91 9876543210" required>
+                <label for="general-phone">Phone Number <span class="req">*</span></label>
+                <input id="general-phone" type="tel" name="phone" placeholder="e.g. +91 9876543210" required>
               </div>
               <div class="form-group">
-                <label>City</label>
-                <input type="text" name="city" placeholder="e.g. Vadodara">
+                <label for="general-city">City</label>
+                <input id="general-city" type="text" name="city" placeholder="e.g. Vadodara">
               </div>
             </div>
             <div class="form-group">
-              <label>Message <span class="req">*</span></label>
-              <textarea name="message" rows="5" placeholder="Please share details about your inquiry..." required></textarea>
+              <label for="general-message">Message <span class="req">*</span></label>
+              <textarea id="general-message" name="message" rows="5" placeholder="Please share details about your inquiry..." required></textarea>
             </div>
             <button type="submit" class="btn-submit">Submit General Enquiry →</button>
           </form>
         </div>
 
         <!-- TAB 2: Distributor Inquiry -->
-        <div id="tab-distributor" class="tab-pane" role="tabpanel">
+        <div id="tab-distributor" class="tab-pane" role="tabpanel" aria-labelledby="tab-distributor-btn" hidden>
           <form method="POST" action="contact.php" class="styled-form">
+            <?= csrfField() ?>
             <input type="hidden" name="enquiry_type" value="distributor">
             <div class="form-grid-2">
               <div class="form-group">
-                <label>Contact Name <span class="req">*</span></label>
-                <input type="text" name="name" placeholder="Full name of representative" required>
+                <label for="distributor-name">Contact Name <span class="req">*</span></label>
+                <input id="distributor-name" type="text" name="name" placeholder="Full name of representative" required>
               </div>
               <div class="form-group">
-                <label>Company / Firm Name <span class="req">*</span></label>
-                <input type="text" name="company_name" placeholder="Enterprise or Agency name" required>
-              </div>
-            </div>
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label>City <span class="req">*</span></label>
-                <input type="text" name="city" placeholder="e.g. Ahmedabad, Surat, Rajkot" required>
-              </div>
-              <div class="form-group">
-                <label>State <span class="req">*</span></label>
-                <input type="text" name="state" placeholder="e.g. Gujarat" required>
+                <label for="distributor-company">Company / Firm Name <span class="req">*</span></label>
+                <input id="distributor-company" type="text" name="company_name" placeholder="Enterprise or Agency name" required>
               </div>
             </div>
             <div class="form-grid-2">
               <div class="form-group">
-                <label>Current Brands Handled</label>
-                <input type="text" name="current_brands" placeholder="e.g. Beverage / FMCG brands or None">
+                <label for="distributor-city">City <span class="req">*</span></label>
+                <input id="distributor-city" type="text" name="city" placeholder="e.g. Ahmedabad, Surat, Rajkot" required>
               </div>
               <div class="form-group">
-                <label>Investment Capacity <span class="req">*</span></label>
-                <select name="investment_capacity" required>
+                <label for="distributor-state">State <span class="req">*</span></label>
+                <input id="distributor-state" type="text" name="state" placeholder="e.g. Gujarat" required>
+              </div>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="distributor-brands">Current Brands Handled</label>
+                <input id="distributor-brands" type="text" name="current_brands" placeholder="e.g. Beverage / FMCG brands or None">
+              </div>
+              <div class="form-group">
+                <label for="distributor-investment">Investment Capacity <span class="req">*</span></label>
+                <select id="distributor-investment" name="investment_capacity" required>
                   <option value="">Select Investment Capacity</option>
                   <option value="Below 5L">Below 5L</option>
                   <option value="5-10L">5-10L</option>
@@ -219,59 +248,60 @@ include 'includes/header.php';
             </div>
             <div class="form-grid-2">
               <div class="form-group">
-                <label>Email Address <span class="req">*</span></label>
-                <input type="email" name="email" placeholder="you@business.com" required>
+                <label for="distributor-email">Email Address <span class="req">*</span></label>
+                <input id="distributor-email" type="email" name="email" placeholder="you@business.com" required>
               </div>
               <div class="form-group">
-                <label>Phone / Mobile <span class="req">*</span></label>
-                <input type="tel" name="phone" placeholder="+91 9876543210" required>
+                <label for="distributor-phone">Phone / Mobile <span class="req">*</span></label>
+                <input id="distributor-phone" type="tel" name="phone" placeholder="+91 9876543210" required>
               </div>
             </div>
             <div class="form-group">
-              <label>Message / Distribution Area Coverage</label>
-              <textarea name="message" rows="4" placeholder="Mention your warehousing capacity, vehicle fleet, and target territory..."></textarea>
+              <label for="distributor-message">Message / Distribution Area Coverage</label>
+              <textarea id="distributor-message" name="message" rows="4" placeholder="Mention your warehousing capacity, vehicle fleet, and target territory..."></textarea>
             </div>
             <button type="submit" class="btn-submit">Submit Distributor Application →</button>
           </form>
         </div>
 
         <!-- TAB 3: Career -->
-        <div id="tab-career" class="tab-pane" role="tabpanel">
+        <div id="tab-career" class="tab-pane" role="tabpanel" aria-labelledby="tab-career-btn" hidden>
           <form method="POST" action="contact.php" class="styled-form">
+            <?= csrfField() ?>
             <input type="hidden" name="enquiry_type" value="career">
             <div class="form-grid-2">
               <div class="form-group">
-                <label>Candidate Name <span class="req">*</span></label>
-                <input type="text" name="name" placeholder="Your full legal name" required>
+                <label for="career-name">Candidate Name <span class="req">*</span></label>
+                <input id="career-name" type="text" name="name" placeholder="Your full legal name" required>
               </div>
               <div class="form-group">
-                <label>Email Address <span class="req">*</span></label>
-                <input type="email" name="email" placeholder="you@example.com" required>
-              </div>
-            </div>
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label>Phone Number <span class="req">*</span></label>
-                <input type="tel" name="phone" placeholder="+91 9876543210" required>
-              </div>
-              <div class="form-group">
-                <label>City</label>
-                <input type="text" name="city" placeholder="Current residence city">
+                <label for="career-email">Email Address <span class="req">*</span></label>
+                <input id="career-email" type="email" name="email" placeholder="you@example.com" required>
               </div>
             </div>
             <div class="form-grid-2">
               <div class="form-group">
-                <label>Position Applied For <span class="req">*</span></label>
-                <input type="text" name="position_applied" placeholder="e.g. QC Officer, Machine Operator, Sales Manager" required>
+                <label for="career-phone">Phone Number <span class="req">*</span></label>
+                <input id="career-phone" type="tel" name="phone" placeholder="+91 9876543210" required>
               </div>
               <div class="form-group">
-                <label>Experience (Years)</label>
-                <input type="text" name="experience" placeholder="e.g. Fresher / 3 Years FMCG">
+                <label for="career-city">City</label>
+                <input id="career-city" type="text" name="city" placeholder="Current residence city">
+              </div>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="career-position">Position Applied For <span class="req">*</span></label>
+                <input id="career-position" type="text" name="position_applied" placeholder="e.g. QC Officer, Machine Operator, Sales Manager" required>
+              </div>
+              <div class="form-group">
+                <label for="career-experience">Experience (Years)</label>
+                <input id="career-experience" type="text" name="experience" placeholder="e.g. Fresher / 3 Years FMCG">
               </div>
             </div>
             <div class="form-group">
-              <label>Message / Profile Summary <span class="req">*</span></label>
-              <textarea name="message" rows="4" placeholder="Briefly highlight your technical background, qualifications, and notice period..." required></textarea>
+              <label for="career-message">Message / Profile Summary <span class="req">*</span></label>
+              <textarea id="career-message" name="message" rows="4" placeholder="Briefly highlight your technical background, qualifications, and notice period..." required></textarea>
             </div>
             <button type="submit" class="btn-submit">Submit Career Application →</button>
           </form>
@@ -289,7 +319,7 @@ include 'includes/header.php';
       <p style="color:rgba(255,255,255,0.7);font-size:0.9rem;margin-top:0.35rem;">Unit 01: Shiv Industrial Park, Lamdapura, Savli · Unit 02: Shankar Industrial Park, Manjusar GIDC</p>
     </div>
   </div>
-  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d58970.0!2d73.1723!3d22.3119!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395fc5873b7a7b0f%3A0xcba33c5c6d395e1b!2sVadodara%2C+Gujarat!5e0!3m2!1sen!2sin!4v1" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d58970.0!2d73.1723!3d22.3119!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395fc5873b7a7b0f%3A0xcba33c5c6d395e1b!2sVadodara%2C+Gujarat!5e0!3m2!1sen!2sin!4v1" title="Acrosis Beverages locations in Vadodara" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
 </section>
 
 <style>
@@ -356,7 +386,7 @@ include 'includes/header.php';
 /* Contact Cards */
 .contact-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 2rem;
 }
 @media (max-width: 1050px) {
@@ -427,6 +457,12 @@ include 'includes/header.php';
 .contact-link:hover {
   color: var(--gold, #F4C542);
   text-decoration: underline;
+}
+@media (max-width: 480px) {
+  .contact-card { padding: 1.75rem 1.25rem; }
+  .contact-reach-list { overflow-wrap: anywhere; }
+  .map-bar { padding-inline: 1rem; }
+  .map-bar h3 { font-size: 1rem; }
 }
 
 /* Tabs & Form */
@@ -590,7 +626,10 @@ include 'includes/header.php';
 <script>
 function openTab(evt, tabId) {
   const panes = document.querySelectorAll('.tab-pane');
-  panes.forEach(p => p.classList.remove('active'));
+  panes.forEach(p => {
+    p.classList.remove('active');
+    p.hidden = true;
+  });
 
   const btns = document.querySelectorAll('.tab-btn');
   btns.forEach(b => {
@@ -599,6 +638,7 @@ function openTab(evt, tabId) {
   });
 
   document.getElementById(tabId).classList.add('active');
+  document.getElementById(tabId).hidden = false;
   evt.currentTarget.classList.add('active');
   evt.currentTarget.setAttribute('aria-selected', 'true');
 }
@@ -628,7 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
       Every bottle of Acrosis goes through <strong style="color:#F4C542;">12 quality checks</strong> — FSSAI &amp; ISO food safety compliant.
     </p>
     <p style="color:#F4C542;font-size:1.25rem;font-weight:700;letter-spacing:1px;">
-      📞 Call Now: <a href="tel:+919409833866" style="color:#F4C542;text-decoration:none;">+91-9409833866</a>
+      📞 Helpline: <a href="tel:<?= htmlspecialchars($contactPhoneHref, ENT_QUOTES) ?>" style="color:#F4C542;text-decoration:none;"><?= htmlspecialchars($contactPhone, ENT_QUOTES) ?></a>
     </p>
     <p style="color:rgba(255,255,255,0.6);font-size:0.9rem;margin-top:0.5rem;font-style:italic;">Taste The Premium — Mahadev Har 🙏</p>
   </div>

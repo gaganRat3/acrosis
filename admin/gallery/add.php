@@ -5,6 +5,7 @@ require_once dirname(__DIR__, 2) . '/includes/functions.php';
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrfToken();
     $title = sanitize($_POST['title'] ?? '');
     $sort_order = (int)($_POST['sort_order'] ?? 0);
 
@@ -46,6 +47,7 @@ include '../includes/admin_header.php';
     <?php endif; ?>
 
     <form method="POST" enctype="multipart/form-data">
+        <?= csrfField() ?>
         <div class="form-group">
             <label>Image Title <span style="color:#dc2626;">*</span></label>
             <input type="text" name="title" value="<?= htmlspecialchars($_POST['title'] ?? '') ?>" required placeholder="e.g. Acrosis Production Facility">

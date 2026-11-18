@@ -31,7 +31,9 @@ $recent_enquiries = $conn->query("SELECT * FROM enquiries ORDER BY created_at DE
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <a href="products/add.php" class="btn btn-primary">+ Add Product</a>
             <a href="products/index.php" class="btn btn-secondary">View Products</a>
-            <a href="users/index.php" class="btn btn-outline">Manage Users</a>
+            <?php if (hasRole('super_admin')): ?>
+                <a href="users/index.php" class="btn btn-outline">Manage Users</a>
+            <?php endif; ?>
             <a href="enquiries/index.php" class="btn btn-outline">View Enquiries</a>
         </div>
     </div>
@@ -138,11 +140,13 @@ $recent_enquiries = $conn->query("SELECT * FROM enquiries ORDER BY created_at DE
             <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Upload and organize images displayed on the public gallery page.</p>
             <a href="gallery/index.php" class="btn btn-sm btn-primary">Manage Gallery →</a>
         </div>
-        <div style="padding:16px; background:#F8FAFC; border-radius:8px; border:1px solid #E2E8F0;">
-            <h4 style="font-size:14px; color:#005B8F; margin-bottom:6px;">👤 User Management</h4>
-            <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Control administrative credentials and security access roles.</p>
-            <a href="users/index.php" class="btn btn-sm btn-outline">Manage Access →</a>
-        </div>
+        <?php if (hasRole('super_admin')): ?>
+            <div style="padding:16px; background:#F8FAFC; border-radius:8px; border:1px solid #E2E8F0;">
+                <h4 style="font-size:14px; color:#005B8F; margin-bottom:6px;">👤 User Management</h4>
+                <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Control administrative credentials and security access roles.</p>
+                <a href="users/index.php" class="btn btn-sm btn-outline">Manage Access →</a>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
