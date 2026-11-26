@@ -143,7 +143,7 @@ include 'includes/header.php';
             <a href="https://acrosisbeverages.com" target="_blank" rel="noopener" class="contact-link">acrosisbeverages.com</a>
           </p>
         </div>
-      </div>
+      </div>Spam/Bot honeypot protection added ✅
     </div>
   </div>
 </section>

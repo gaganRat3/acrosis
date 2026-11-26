@@ -89,10 +89,18 @@ $queries[] = "CREATE TABLE IF NOT EXISTS `gallery_images` (
   `id`         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   `title`      VARCHAR(200) NOT NULL,
   `image_path` VARCHAR(300) NOT NULL,
+  `segment`    TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=General, 1=Sparkling Water PET, 2=Premium Juices Glass, 3=Premium Soda Can',
   `sort_order` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX `idx_gallery_sort` (`sort_order`, `id`)
+  INDEX `idx_gallery_sort` (`sort_order`, `id`),
+  INDEX `idx_gallery_segment` (`segment`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+// Add segment column to gallery_images if it doesn't exist (for existing installations)
+$segCol = $conn->query("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'gallery_images' AND COLUMN_NAME = 'segment'");
+if ($segCol && $segCol->num_rows === 0) {
+    $conn->query("ALTER TABLE `gallery_images` ADD COLUMN `segment` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=General, 1=Sparkling Water PET, 2=Premium Juices Glass, 3=Premium Soda Can' AFTER `image_path`, ADD INDEX `idx_gallery_segment` (`segment`)");
+}
 
 // Execute schema
 $errors = [];

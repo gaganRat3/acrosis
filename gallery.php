@@ -4,7 +4,24 @@ $pageTitle = 'Gallery';
 require_once 'config/db.php';
 require_once 'includes/functions.php';
 
-$gallery = $conn->query("SELECT id, title, image_path FROM gallery_images ORDER BY sort_order ASC, id DESC");
+// Segment filter
+$segmentFilter = isset($_GET['segment']) ? (int)$_GET['segment'] : -1;
+$segmentLabels = [
+    1 => 'Sparkling Water',
+    2 => 'Premium Juices',
+    3 => 'Premium Soda',
+];
+
+if ($segmentFilter >= 1 && $segmentFilter <= 3) {
+    $stmt = $conn->prepare("SELECT id, title, image_path, segment FROM gallery_images WHERE segment = ? ORDER BY sort_order ASC, id DESC");
+    $stmt->bind_param("i", $segmentFilter);
+    $stmt->execute();
+    $gallery = $stmt->get_result();
+} else {
+    $segmentFilter = -1;
+    $gallery = $conn->query("SELECT id, title, image_path, segment FROM gallery_images ORDER BY sort_order ASC, id DESC");
+}
+
 include 'includes/header.php';
 ?>
 
@@ -21,6 +38,25 @@ include 'includes/header.php';
 
 <section class="section-pad bg-light">
     <div class="container">
+        <!-- Segment Filter Tabs -->
+        <div class="gallery-filter-bar">
+            <p class="filter-label">Filter by Segment</p>
+            <div class="gallery-filters">
+                <a href="<?= appUrl('gallery.php') ?>" class="filter-tab<?= ($segmentFilter === -1) ? ' active' : '' ?>">
+                    <span class="filter-icon">✦</span> All
+                </a>
+                <a href="<?= appUrl('gallery.php') ?>?segment=1" class="filter-tab<?= ($segmentFilter === 1) ? ' active' : '' ?>">
+                    <span class="filter-icon">💧</span> Sparkling Water
+                </a>
+                <a href="<?= appUrl('gallery.php') ?>?segment=2" class="filter-tab<?= ($segmentFilter === 2) ? ' active' : '' ?>">
+                    <span class="filter-icon">🍹</span> Premium Juices
+                </a>
+                <a href="<?= appUrl('gallery.php') ?>?segment=3" class="filter-tab<?= ($segmentFilter === 3) ? ' active' : '' ?>">
+                    <span class="filter-icon">🥤</span> Premium Soda
+                </a>
+            </div>
+        </div>
+
         <?php if ($gallery && $gallery->num_rows > 0): ?>
             <div class="gallery-grid">
                 <?php while ($image = $gallery->fetch_assoc()): ?>
@@ -28,14 +64,12 @@ include 'includes/header.php';
                         href="uploads/gallery/<?= htmlspecialchars($image['image_path'], ENT_QUOTES) ?>"
                         class="gallery-card fade-in"
                         data-lightbox
-                        data-caption="<?= htmlspecialchars($image['title'], ENT_QUOTES) ?>"
                     >
                         <img
                             src="uploads/gallery/<?= htmlspecialchars($image['image_path'], ENT_QUOTES) ?>"
-                            alt="<?= htmlspecialchars($image['title'], ENT_QUOTES) ?>"
+                            alt="Gallery Image"
                             loading="lazy"
                         >
-                        <span class="gallery-caption"><?= htmlspecialchars($image['title']) ?></span>
                     </a>
                 <?php endwhile; ?>
             </div>
@@ -102,6 +136,79 @@ include 'includes/header.php';
 }
 .breadcrumb a {
     color: var(--gold-light);
+}
+.gallery-filter-bar {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+.filter-label {
+    margin: 0 0 1.2rem;
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    color: var(--navy);
+    letter-spacing: .02em;
+    font-weight: 600;
+}
+.gallery-filters {
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+    justify-content: center;
+    gap: .6rem;
+    max-width: 720px;
+    margin: 0 auto;
+}
+.filter-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    white-space: nowrap;
+    padding: .6rem 1.3rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    background: var(--white);
+    color: #475569;
+    font-weight: 500;
+    font-size: .88rem;
+    text-decoration: none;
+    transition: all .25s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.filter-icon {
+    font-size: .95rem;
+    line-height: 1;
+}
+.filter-tab:hover {
+    border-color: var(--navy);
+    color: var(--navy);
+    background: #f0f7ff;
+    box-shadow: 0 2px 8px rgba(13,27,42,.08);
+    transform: translateY(-1px);
+}
+.filter-tab.active {
+    background: var(--navy);
+    color: #fff;
+    border-color: var(--navy);
+    box-shadow: 0 4px 14px rgba(13,27,42,.2);
+    transform: translateY(-1px);
+}
+@media (max-width: 640px) {
+    .gallery-filters {
+        grid-template-columns: repeat(2, 1fr);
+        gap: .5rem;
+        padding: 0 .25rem;
+    }
+    .gallery-filters .filter-tab:first-child {
+        grid-column: 1 / -1;
+    }
+    .filter-tab {
+        padding: .55rem .75rem;
+        font-size: .84rem;
+    }
+    .filter-label {
+        font-size: 1.05rem;
+        margin-bottom: 1rem;
+    }
 }
 .gallery-grid {
     display: grid;

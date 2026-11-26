@@ -99,7 +99,7 @@ Run `http://localhost/acrosis/config/setup.php` once after starting MySQL. It cr
 - `products`: segment, name, description, image filename, sizes, flavors, featured flag, sort order, timestamps.
 - `enquiries`: general/distributor/career submissions.
 - `site_settings`: seeded company settings; currently not broadly consumed by the public templates.
-- `gallery_images`: gallery title, uploaded image filename, display order, and timestamp.
+- `gallery_images`: gallery title, uploaded image filename, product segment (0=General, 1–3 map to the product segments), display order, and timestamp. The public gallery page supports filtering by segment.
 
 After setup, delete or restrict access to `config/setup.php`. Change the seeded admin password immediately.
 

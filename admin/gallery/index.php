@@ -30,7 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
 }
 
 include '../includes/admin_header.php';
-$images = $conn->query("SELECT id, title, image_path, sort_order, created_at FROM gallery_images ORDER BY sort_order ASC, id DESC");
+$segmentLabels = [1 => 'Sparkling Water (PET)', 2 => 'Premium Juices (Glass)', 3 => 'Premium Soda (Can)'];
+$images = $conn->query("SELECT id, title, image_path, segment, sort_order, created_at FROM gallery_images ORDER BY sort_order ASC, id DESC");
 ?>
 
 <div class="card">
@@ -47,7 +48,7 @@ $images = $conn->query("SELECT id, title, image_path, sort_order, created_at FRO
             <thead>
                 <tr>
                     <th>Preview</th>
-                    <th>Title</th>
+                    <th>Segment</th>
                     <th>Sort Order</th>
                     <th>Added</th>
                     <th style="text-align:center;">Actions</th>
@@ -64,7 +65,7 @@ $images = $conn->query("SELECT id, title, image_path, sort_order, created_at FRO
                                     class="thumb"
                                 >
                             </td>
-                            <td><strong><?= htmlspecialchars($image['title']) ?></strong></td>
+                            <td><?= htmlspecialchars($segmentLabels[(int)$image['segment']] ?? 'General') ?></td>
                             <td><?= (int)$image['sort_order'] ?></td>
                             <td><?= date('d M Y', strtotime($image['created_at'])) ?></td>
                             <td style="text-align:center;">
